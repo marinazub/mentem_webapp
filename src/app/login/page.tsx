@@ -18,11 +18,118 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { signIn } from "next-auth/react";
+import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import { signupAction } from "@/actions/signup";
+import { z } from "zod";
+
+const formSchema = z.object({
+  fName: z
+    .string()
+    .min(2, { message: "First name must be at least 2 characters." }),
+  lName: z
+    .string()
+    .min(2, { message: "Last name must be at least 2 characters." }),
+  gender: z.enum(["male", "female", "other"]),
+  dob: z.date(),
+  zip: z.string().regex(/^\d{5}(?:-\d{4})?$/, { message: "Invalid zip code." }),
+  insurance: z
+    .string()
+    .min(2, { message: "Insurance name must be at least 2 characters." }),
+  service: z.enum(["online", "in-person"]),
+  emergencyName: z
+    .string()
+    .min(2, { message: "Emergency name must be at least 2 characters." }),
+  emergencyPhone: z
+    .string()
+    .regex(/^\d{3}-\d{3}-\d{4}$/, { message: "Invalid phone number." }),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("admin@infisum.com");
-  const [password, setPassword] = useState("••••••••••");
+  const router = useRouter();
+  const [gender, setGender] = useState<"male" | "female" | "other">("male");
+  const [servicePreference, setServicePreference] = useState<
+    "online" | "in-person"
+  >("online");
+  const [dob, setDob] = useState<Date | undefined>(undefined);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    console.log("Form Submitted:", { email, password });
+    const loginRes = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+    if (!loginRes?.error) {
+      toast.success("Login successful!");
+      setTimeout(() => {
+        router.replace("/");
+      }, 500);
+    } else {
+      toast.error("Login failed. Try again.");
+    }
+  };
+
+  const signupSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    // const fname = formData.get("fName") as string;
+    // const lname = formData.get("lName") as string;
+    // const zip = formData.get("zip") as string;
+    // const emergencyName = formData.get("emergencyName") as string;
+    // const emergencyPhone = formData.get("emergencyPhone") as string;
+    // const insuranceCompany = formData.get("insuranceCompany") as string;
+    // const email = formData.get("email") as string;
+    formData.append("gender", gender);
+    formData.append("service", servicePreference);
+    if (dob) {
+      formData.append("dob", dob.toISOString());
+    }
+
+    // const formValues: FormValues = {
+    //   fName: formData.get("fName") as string,
+    //   lName: formData.get("lName") as string,
+    //   gender: gender,
+    //   dob: dob as Date,
+    //   zip: formData.get("zip") as string,
+    //   insurance: formData.get("insurance") as string,
+    //   service: servicePreference,
+    //   emergencyName: formData.get("emergencyName") as string,
+    //   emergencyPhone: formData.get("emergencyPhone") as string,
+    // };
+
+    // const result = formSchema.safeParse(formValues);
+
+    let response = await signupAction(formData);
+    response.success
+      ? toast.success(response.message)
+      : toast.error(response.message);
+
+    // const password = formData.get("password") as string;
+
+    // console.log({
+    //   fname,
+    //   lname,
+    //   dob,
+    //   zip,
+    //   emergencyName,
+    //   emergencyPhone,
+    //   insuranceCompany,
+    //   email,
+    //   password,
+    //   servicePreference,
+    //   gender,
+    // });
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative ">
@@ -42,13 +149,14 @@ export default function LoginPage() {
             </TabsList>
 
             <TabsContent value="login">
-              <form action={handleSignIn} className="space-y-4">
+              <form onSubmit={onSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="email">Email</label>
                   <Input
                     id="email"
                     type="email"
                     name="email"
+                    placeholder="admin@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full"
@@ -61,6 +169,7 @@ export default function LoginPage() {
                     id="password"
                     type="password"
                     name="password"
+                    placeholder="•••••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full"
@@ -101,19 +210,23 @@ export default function LoginPage() {
             </TabsContent>
 
             <TabsContent value="signup">
-              <form action={handleSignIn} className="space-y-4">
+              <form onSubmit={signupSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="f-name">First Name</Label>
-                  <Input id="f-name" name="f-name" className="w-full" />
+                  <Input id="f-name" name="fName" className="w-full" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="l-name">Last Name</Label>
-                  <Input id="l-name" name="l-name" className="w-full" />
+                  <Input id="l-name" name="lName" className="w-full" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Gender</Label>
-                  <Select>
-                    <SelectTrigger className="w-full">
+                  <Label htmlFor="gender">Gender</Label>
+                  <Select
+                    onValueChange={(val: "male" | "female" | "other") =>
+                      setGender(val)
+                    }
+                  >
+                    <SelectTrigger className="w-full" id="gender">
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
@@ -125,7 +238,8 @@ export default function LoginPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="dob">Date of Birth</Label>
-                  <DatePicker id="dob" />
+                  <Input id="dob" name="dob" type="date" className="w-full" />
+                  {/* <DatePicker id="dob" onDateSelect={setDob} /> */}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="zip">Zip Code</Label>
@@ -133,19 +247,29 @@ export default function LoginPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="insurance">Insurance Company</Label>
-                  <Input id="insurance" name="insurance" className="w-full" />
+                  <Label htmlFor="insuranceCompany">Insurance Company</Label>
+                  <Input
+                    id="insuranceCompany"
+                    name="insuranceCompany"
+                    className="w-full"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="service">Service Preference</Label>
-                  <RadioGroup defaultValue="option-one" className="flex pt-1">
+                  <RadioGroup
+                    defaultValue="online"
+                    className="flex pt-1"
+                    onValueChange={(val: "online" | "in-person") =>
+                      setServicePreference(val)
+                    }
+                  >
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="option-one" id="option-one" />
-                      <Label htmlFor="option-one">Online</Label>
+                      <RadioGroupItem value="online" id="online" />
+                      <Label htmlFor="online">Online</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="option-two" id="option-two" />
-                      <Label htmlFor="option-two">In Person</Label>
+                      <RadioGroupItem value="in-person" id="in-person" />
+                      <Label htmlFor="in-person">In Person</Label>
                     </div>
                   </RadioGroup>
                 </div>
@@ -156,7 +280,7 @@ export default function LoginPage() {
                   <Label htmlFor="emergency-name">Name</Label>
                   <Input
                     id="emergency-name"
-                    name="emergency-name"
+                    name="emergencyName"
                     className="w-full"
                   />
                 </div>
@@ -164,9 +288,20 @@ export default function LoginPage() {
                   <Label htmlFor="emergency-phone">Phone</Label>
                   <Input
                     id="emergency-phone"
-                    name="emergency-phone"
+                    name="emergencyPhone"
                     className="w-full"
                   />
+                </div>
+                <div className="mt-5">
+                  <h4 className="text-lg font-semibold">Authentication</h4>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" name="email" className="w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input id="password" name="password" className="w-full" />
                 </div>
 
                 <div className="flex items-center justify-between pt-2">
