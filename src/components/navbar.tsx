@@ -20,7 +20,7 @@ const Navbar = (props: Props) => {
         </button>
       </div>
       <div className="sm:hidden fixed top-0 left-0 right-0 flex justify-center h-16">
-        <div className="w-full max-w-md flex items-center justify-between p-2 sm:border-x shadow-md bg-white">
+        <div className="w-full flex items-center justify-between p-2 sm:border-x shadow-md bg-white">
           <button
             onClick={() => signOut()}
             title="Logout"

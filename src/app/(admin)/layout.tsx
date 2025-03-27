@@ -1,6 +1,5 @@
 import Navbar from "@/components/navbar";
-import { Button } from "@/components/ui/button";
-import { ArrowLeftToLineIcon } from "lucide-react";
+import SidebarComponent from "@/components/sidebar";
 import { Metadata } from "next";
 import React from "react";
 
@@ -15,36 +14,15 @@ export const metadata: Metadata = {
 
 const AdminLayout = ({ children }: Props) => {
   return (
-    <React.Fragment>
-      <div className="bg-[#EAEDEF]">
-        <Navbar />
-        <aside className="hidden sm:block h-screen fixed w-72 bg-[#EAEDEF] px-3">
-          <div className="h-16 flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-normal">MENTEM</h1>
-            <button className="h-8 w-8 flex items-center justify-center">
-              <ArrowLeftToLineIcon size={20} />
-            </button>
-          </div>
-          <Button
-            variant={"outline"}
-            className="rounded-xs w-full cursor-pointer bg-transparent border-black"
-          >
-            Start a new conversation
-          </Button>
-          <div className="mt-10">
-            <h4 className="text-sm font-semibold">Conversation history</h4>
-            <ul className="text-sm  mt-5">
-              <li>February 21, 2025 check-in</li>
-            </ul>
-          </div>
-        </aside>
-        <div className="sm:ps-72 w-full max-w-md sm:max-w-full mx-auto sm:p-2">
-          <main className="pt-14 h-[calc(100vh_-_16px)] overflow-hidden rounded-sm bg-white">
-            {children}
-          </main>
-        </div>
+    <div className="bg-[#EAEDEF]">
+      <Navbar />
+      <SidebarComponent />
+      <div className="sm:ps-72 w-full sm:p-2">
+        <main className="pt-14 h-[calc(100vh_-_16px)] overflow-hidden rounded-sm bg-white">
+          {children}
+        </main>
       </div>
-    </React.Fragment>
+    </div>
   );
 };
 
