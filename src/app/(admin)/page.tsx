@@ -1,7 +1,6 @@
 "use client";
 
 import { sendMessage } from "@/actions/chat";
-import { Button } from "@/components/ui/button";
 import { v4 as uuid4 } from "uuid";
 import { ArrowUpIcon, LoaderCircleIcon, PlusIcon } from "lucide-react";
 import React, { useEffect } from "react";
@@ -38,8 +37,8 @@ const HomePage = (props: Props) => {
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault(); // Prevent new line
-      handleSubmit(); // Call submit function
+      event.preventDefault();
+      handleSubmit();
     }
   };
 
@@ -47,10 +46,6 @@ const HomePage = (props: Props) => {
     if (scrollTargetRef.current) {
       scrollTargetRef.current.scrollIntoView({ behavior: "smooth" });
     }
-    // if (chatContainerRef.current) {
-    //   chatContainerRef.current.scrollTop =
-    //     chatContainerRef.current.scrollHeight;
-    // }
   };
 
   const handleSubmit = async () => {
@@ -130,7 +125,7 @@ const HomePage = (props: Props) => {
         ))}
         <div ref={scrollTargetRef} />
       </div>
-      <div className="h-auto border bg-white flex flex-col p-2">
+      <div className="h-auto border-t bg-white flex flex-col p-2">
         <textarea
           disabled={isSubmitting}
           ref={textareaRef}
@@ -165,13 +160,6 @@ const HomePage = (props: Props) => {
               <ArrowUpIcon size={20} />
             )}
           </button>
-          {/* <button
-            disabled={isSubmitting}
-            onClick={() => handleSubmit()}
-            className="rounded-full bg-blue-100 border flex items-center justify-center mt-1 h-9 w-9 hover:cursor-pointer"
-          >
-            <ArrowUpIcon size={20} />
-          </button> */}
         </div>
       </div>
     </div>
