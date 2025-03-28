@@ -39,7 +39,7 @@ const UserButton = (props: Props) => {
               <AvatarImage src="https://github.com/shadcn.png" alt="@user" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>{" "}
-            <span className="ms-2">John Doe</span>
+            <span className="ms-2">{session.data?.user?.name}</span>
           </div>
           <ChevronUpIcon className="" />
         </button>
