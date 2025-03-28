@@ -1,5 +1,6 @@
+"use client";
+
 import React from "react";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,13 +16,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import {
+  ChevronUpIcon,
+  GlobeIcon,
+  LogOutIcon,
+  Settings,
+  ShieldIcon,
+  UserCircleIcon,
+} from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 type Props = {};
 
 const UserButton = (props: Props) => {
+  const session = useSession();
+  console.log("Session:::::",session);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="w-full justify-between text-lg outline-none">
+        <button className="w-full flex items-center justify-between text-lg outline-none text-teal-700">
           <div className="flex items-center">
             <Avatar className="h-12 w-12">
               <AvatarImage src="https://github.com/shadcn.png" alt="@user" />
@@ -29,56 +41,44 @@ const UserButton = (props: Props) => {
             </Avatar>{" "}
             <span className="ms-2">John Doe</span>
           </div>
+          <ChevronUpIcon className="" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuLabel>{session?.data?.user?.email}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            Profile
-            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+            Profile Setting
+            <DropdownMenuShortcut>
+              <UserCircleIcon />
+            </DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            Billing
-            <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+            Preferences
+            <DropdownMenuShortcut>
+              <Settings />
+            </DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            Settings
-            <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+            Privacy
+            <DropdownMenuShortcut>
+              <ShieldIcon />
+            </DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            Keyboard shortcuts
-            <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
+            Language
+            <DropdownMenuShortcut>
+              <GlobeIcon />
+            </DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>Team</DropdownMenuItem>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Invite users</DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem>Email</DropdownMenuItem>
-                <DropdownMenuItem>Message</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>More...</DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
-          <DropdownMenuItem>
-            New Team
-            <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>GitHub</DropdownMenuItem>
-        <DropdownMenuItem>Support</DropdownMenuItem>
-        <DropdownMenuItem disabled>API</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => signOut()}>
           Log out
-          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+          <DropdownMenuShortcut>
+            <LogOutIcon />
+          </DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

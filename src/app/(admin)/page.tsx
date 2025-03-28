@@ -4,10 +4,12 @@ import { sendMessage } from "@/actions/chat";
 import { v4 as uuid4 } from "uuid";
 import { ArrowUpIcon, LoaderCircleIcon, PlusIcon } from "lucide-react";
 import React, { useEffect } from "react";
+import { useSession } from "next-auth/react";
 
 type Props = {};
 
 const HomePage = (props: Props) => {
+  const session = useSession();
   const [sessionId, setSessionId] = React.useState("");
   const [message, setMessage] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
@@ -55,6 +57,7 @@ const HomePage = (props: Props) => {
       setMessage("");
     }
     console.log("SessionID::: ", sessionId);
+    console.log("UserID::: ",   session.data?.user?.id!);
     if (sessionId) {
       setMessages((prev) => {
         const lastEl = prev.at(-1);
@@ -64,7 +67,11 @@ const HomePage = (props: Props) => {
         ];
       });
       setIsSubmitting(true);
-      const response = await sendMessage(message, sessionId);
+      const response = await sendMessage(
+        session.data?.user?.id!,
+        message,
+        sessionId
+      );
       setIsSubmitting(false);
 
       if (response.message) {
@@ -98,7 +105,9 @@ const HomePage = (props: Props) => {
         className="flex-1 overflow-y-auto p-4 space-y-3"
       >
         <div className="p-3">
-          <h2 className="text-2xl font-semibold">Hi Jane,</h2>
+          <h2 className="text-2xl font-semibold">
+            Hi {session.data?.user?.name},
+          </h2>
           <div className="my-3 text-sm">
             I’m Gino...your provider’s screening assistant. It’s great to meet
             you, Jane D! Let’s start by getting to know each other.

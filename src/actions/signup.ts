@@ -13,13 +13,13 @@ export const signupAction = async (
   const emergencyName = formData.get("emergencyName") as string;
   const emergencyPhone = formData.get("emergencyPhone") as string;
   const insuranceCompany = formData.get("insuranceCompany") as string;
-  const service = formData.get("service") as string;
+  const servicePreference = formData.get("servicePreference") as string;
   const gender = formData.get("gender") as string;
   const dob = formData.get("dob") as string;
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  if (!fname || !email || !password || !gender || !dob || !zip || !service) {
+  if (!fname || !email || !password || !gender || !dob || !zip || !servicePreference) {
     return {
       success: false,
       message: "All fields are required..",
@@ -46,7 +46,7 @@ export const signupAction = async (
       dob,
       zipCode: zip,
       insuranceCompany,
-      servicePreference: service,
+      servicePreference,
       emergencyName,
       emergencyPhone,
     },

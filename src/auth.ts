@@ -26,11 +26,13 @@ export const authConfig = {
 
           const passwordsMatch = await verifyPassword(password, user.password);
           console.log("Password Match:::", passwordsMatch);
+          console.log("User :::", user);
 
           if (passwordsMatch) {
             return {
               id: user.id,
               email: user.email,
+              name: `${user.firstName} ${user.lastName ?? ""}`.trim(),
             };
           }
         }
@@ -43,14 +45,14 @@ export const authConfig = {
       if (user) {
         console.log("user callback::", user);
         // token.role = user.role;
-        // token.id = user.id;
+        token.id = user.id;
       }
       return token;
     },
     session: async ({ session, token }) => {
       if (token && session.user) {
         // session.user.role = token.role as string;
-        // session.user.id = token.id as string;
+        session.user.id = token.id as string;
       }
       return session;
     },
