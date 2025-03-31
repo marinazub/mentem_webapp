@@ -1,8 +1,7 @@
 import NextAuth from "next-auth";
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { z } from "zod"; // For schema validation
-// import { db } from './db'; // Your database connection (e.g., Prisma, Drizzle)
+import { z } from "zod";
 import { prismaDB } from "./lib/connect-db";
 import { verifyPassword } from "./utils/verifyPassword";
 
@@ -25,14 +24,13 @@ export const authConfig = {
           if (!user) return null;
 
           const passwordsMatch = await verifyPassword(password, user.password);
-          console.log("Password Match:::", passwordsMatch);
-          console.log("User :::", user);
 
           if (passwordsMatch) {
             return {
               id: user.id,
               email: user.email,
               name: `${user.firstName} ${user.lastName ?? ""}`.trim(),
+              iConsent: user.iConsent,
             };
           }
         }
@@ -41,24 +39,34 @@ export const authConfig = {
     }),
   ],
   callbacks: {
-    jwt: async ({ token, user }) => {
+    jwt: async ({ token, user, trigger }) => {
       if (user) {
-        console.log("user callback::", user);
-        // token.role = user.role;
+        token.iConsent = user.iConsent;
         token.id = user.id;
+      }
+
+      if (trigger === "update") {
+        console.log("Triggering.....................................");
+        const updatedUser = await prismaDB.user.findUnique({
+          where: { id: token.id as string },
+          select: { iConsent: true },
+        });
+
+        console.log("Updated User====>", updatedUser);
+        token.iConsent = updatedUser?.iConsent;
       }
       return token;
     },
     session: async ({ session, token }) => {
       if (token && session.user) {
-        // session.user.role = token.role as string;
+        session.user.iConsent = token.iConsent as boolean;
         session.user.id = token.id as string;
       }
       return session;
     },
   },
   pages: {
-    signIn: "/login", // Custom login page
+    signIn: "/login",
   },
 } satisfies NextAuthConfig;
 

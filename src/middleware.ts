@@ -9,20 +9,20 @@ export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
   const publicPaths = ["/login"];
-
   if (publicPaths.includes(pathname)) {
-    if (session) {
+    if (session && session.user.iConsent) {
       return NextResponse.redirect(new URL("/", req.url));
     }
     return NextResponse.next();
   }
-
   if (!session) {
     return NextResponse.redirect(
       new URL("/login?callbackUrl=" + encodeURIComponent(pathname), req.url)
     );
   }
-
+  if (session && !session.user.iConsent) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
   return NextResponse.next();
 }
 

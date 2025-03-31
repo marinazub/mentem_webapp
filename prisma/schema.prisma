@@ -21,6 +21,7 @@ model User {
   emergencyName      String?
   emergencyPhone     String?
   isCredentialsLogin Boolean @default(true)
+  iConsent           Boolean @default(false)
 
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt

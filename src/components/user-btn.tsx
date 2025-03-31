@@ -29,7 +29,6 @@ type Props = {};
 
 const UserButton = (props: Props) => {
   const session = useSession();
-  console.log("Session:::::",session);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
