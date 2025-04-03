@@ -3,19 +3,37 @@
 import { sendMessage } from "@/actions/chat";
 import { v4 as uuid4 } from "uuid";
 import { ArrowUpIcon, LoaderCircleIcon, PlusIcon } from "lucide-react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAppContext } from "@/context/useAppContext";
 
 type Props = {};
 
+interface Message {
+  id: number;
+  sender: "user" | "bot";
+  text: string;
+}
+
+interface ApiResponse {
+  bot_response: string;
+  user_message: string;
+  timestamp: string;
+}
+
 const HomePage = (props: Props) => {
+  const router = useRouter();
+  const { sessionHistory, userId } = useAppContext();
+  const searchParams = useSearchParams();
+  const sessionIdParams = searchParams.get("sessionId") as string;
   const session = useSession();
-  const [sessionId, setSessionId] = React.useState("");
   const [message, setMessage] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
-  const [messages, setMessages] = React.useState([
-    { id: 1, sender: "bot", text: "Hello! How can I assist you today?" },
-  ]);
+  const [messages, setMessages] = React.useState<Message[]>([]);
+  const [isFetchedConversation, setIsFetchedConversation] = useState(false);
+  const [isFetchedConversationLoading, setIsFetchedConversationLoading] =
+    useState(false);
   const chatContainerRef = React.useRef<HTMLDivElement>(null);
   const scrollTargetRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -27,12 +45,11 @@ const HomePage = (props: Props) => {
       textarea.style.height = "auto";
       textarea.style.height = `${textarea.scrollHeight}px`;
 
-      // Restrict to max height (5 lines) and enable scroll only if more than 5 lines
       if (textarea.scrollHeight > 120) {
-        textarea.style.height = "120px"; // Max height (5 lines)
-        textarea.style.overflowY = "auto"; // Enable scrolling
+        textarea.style.height = "120px";
+        textarea.style.overflowY = "auto";
       } else {
-        textarea.style.overflowY = "hidden"; // Hide scrollbar when under 5 lines
+        textarea.style.overflowY = "hidden";
       }
     }
   };
@@ -56,47 +73,94 @@ const HomePage = (props: Props) => {
       textareaRef.current.style.height = "auto";
       setMessage("");
     }
-    console.log("SessionID::: ", sessionId);
-    console.log("UserID::: ",   session.data?.user?.id!);
-    if (sessionId) {
+    console.log("UserID::: ", session.data?.user?.id!);
+
+    setMessages((prev) => {
+      const lastEl = prev.at(-1);
+      return [
+        ...prev,
+        { id: lastEl ? lastEl?.id + 1 : 1, sender: "user", text: message },
+      ];
+    });
+    setIsSubmitting(true);
+    const response = await sendMessage(
+      session.data?.user?.id!,
+      message,
+      sessionIdParams
+    );
+    setIsSubmitting(false);
+
+    if (response.message) {
       setMessages((prev) => {
         const lastEl = prev.at(-1);
         return [
           ...prev,
-          { id: lastEl ? lastEl?.id + 1 : 1, sender: "user", text: message },
+          {
+            id: lastEl ? lastEl?.id + 1 : 1,
+            sender: "bot",
+            text: response.message,
+          },
         ];
       });
-      setIsSubmitting(true);
-      const response = await sendMessage(
-        session.data?.user?.id!,
-        message,
-        sessionId
-      );
-      setIsSubmitting(false);
-
-      if (response.message) {
-        setMessages((prev) => {
-          const lastEl = prev.at(-1);
-          return [
-            ...prev,
-            {
-              id: lastEl ? lastEl?.id + 1 : 1,
-              sender: "bot",
-              text: response.message,
-            },
-          ];
-        });
-      }
     }
   };
 
+  const fetchConversation = async () => {
+    const foundSession = sessionHistory.find(
+      (session) => session.session_id === sessionIdParams
+    );
+    if (foundSession) {
+      setMessages([]);
+      setIsFetchedConversation(true);
+      setIsFetchedConversationLoading(true);
+      const res = await fetch(
+        "https://hvk117oiij.execute-api.us-east-1.amazonaws.com/default/session_history",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            user_id: session.data?.user.id,
+            session_id: foundSession.session_id,
+          }),
+        }
+      );
+
+      const response = await res.json();
+      setIsFetchedConversationLoading(false);
+      if (res.status === 200) {
+        const responseData = response as ApiResponse[];
+        console.log("Response data =====>>>", responseData);
+        let messageIdCounter = 1;
+        const updatedData: Message[] = [];
+        responseData.forEach((element, index) => {
+          updatedData.push({
+            id: messageIdCounter++,
+            sender: "user",
+            text: element.user_message,
+          });
+          updatedData.push({
+            id: messageIdCounter++,
+            sender: "bot",
+            text: element.bot_response,
+          });
+        });
+        setMessages(updatedData);
+      }
+    } else {
+      setIsFetchedConversation(false);
+      setMessages([]);
+    }
+    console.log(foundSession);
+  };
+
   useEffect(() => {
-    const newSessionId = uuid4();
-    setSessionId(newSessionId);
-  }, []);
-  useEffect(() => {
+    console.log("ABCDEfGHI+++++++>>>>>>>", sessionHistory);
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    console.log("Session IF", sessionIdParams);
+    fetchConversation();
+  }, [sessionIdParams]);
 
   return (
     <div className="h-[calc(100vh_-_64px)] w-full flex flex-col">
@@ -116,7 +180,7 @@ const HomePage = (props: Props) => {
             How have you been feeling recently?
           </div>
         </div>
-        {messages.map((msg) => (
+        {messages.map((msg, index) => (
           <div
             key={msg.id}
             className={`flex ${
@@ -132,11 +196,18 @@ const HomePage = (props: Props) => {
             </div>
           </div>
         ))}
+        {isFetchedConversationLoading && (
+          <div className="animate-pulse flex space-x-2">
+            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+          </div>
+        )}
         <div ref={scrollTargetRef} />
       </div>
       <div className="h-auto border-t bg-white flex flex-col p-2">
         <textarea
-          disabled={isSubmitting}
+          disabled={isSubmitting || isFetchedConversation}
           ref={textareaRef}
           placeholder="Type here..."
           onKeyDown={handleKeyDown}
@@ -144,7 +215,7 @@ const HomePage = (props: Props) => {
           rows={1}
           className="p-2 focus:outline-0 resize-none w-full"
           style={{
-            maxHeight: "120px", // Restrict max height (5 lines)
+            maxHeight: "120px",
           }}
         />
         <div className="flex justify-between items-center">
@@ -152,11 +223,11 @@ const HomePage = (props: Props) => {
             <PlusIcon size={20} />
           </button>
           <button
-            disabled={isSubmitting}
+            disabled={isSubmitting || isFetchedConversation}
             onClick={handleSubmit}
             className={`rounded-full border flex items-center justify-center mt-1 h-9 ${
-              isSubmitting
-                ? "w-fit px-2 duration-300 bg-blue-500 text-white text-sm "
+              isFetchedConversation || isSubmitting
+                ? "w-fit px-2 duration-300 bg-blue-500 text-white text-sm cursor-not-allowed"
                 : "w-9 hover:cursor-pointer"
             }`}
           >
