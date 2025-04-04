@@ -7,6 +7,8 @@ interface AppContextType {
   setSessionHistory: React.Dispatch<React.SetStateAction<SessionHistoryType[]>>;
   fetchSessionHistory: (userId?: string) => Promise<void>;
   userId?: string;
+  isSidebarOpen: boolean;
+  toggleSidebar: () => void;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -27,6 +29,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({
   const [sessionHistory, setSessionHistory] = useState<SessionHistoryType[]>(
     []
   );
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   const fetchSessionHistory = async (userId?: string) => {
     if (userId) {
@@ -43,7 +50,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({
       const response = await res.json();
       if (res.status === 200) {
         const sessionData = response.sessions as SessionHistoryType[];
-        setSessionHistory(sessionData);
+        const sortedSessionData = sessionData.sort((a, b) => {
+          return (
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          );
+        });
+        setSessionHistory(sortedSessionData);
       }
     } else {
       setSessionHistory([]);
@@ -58,6 +70,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({
     setSessionHistory,
     fetchSessionHistory,
     userId,
+    isSidebarOpen,
+    toggleSidebar,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

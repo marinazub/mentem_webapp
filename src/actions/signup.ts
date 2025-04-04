@@ -6,7 +6,6 @@ import { saltAndHashPassword } from "@/utils/saltAndHashPassword";
 export const signupAction = async (
   formData: FormData
 ): Promise<{ success: boolean; message: string }> => {
-  console.log("signupAction::", formData);
   const fname = formData.get("fName") as string;
   const lname = formData.get("lName") as string;
   const zip = formData.get("zip") as string;

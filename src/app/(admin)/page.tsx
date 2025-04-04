@@ -73,7 +73,6 @@ const HomePage = (props: Props) => {
       textareaRef.current.style.height = "auto";
       setMessage("");
     }
-    console.log("UserID::: ", session.data?.user?.id!);
 
     setMessages((prev) => {
       const lastEl = prev.at(-1);
@@ -128,7 +127,7 @@ const HomePage = (props: Props) => {
       setIsFetchedConversationLoading(false);
       if (res.status === 200) {
         const responseData = response as ApiResponse[];
-        console.log("Response data =====>>>", responseData);
+
         let messageIdCounter = 1;
         const updatedData: Message[] = [];
         responseData.forEach((element, index) => {
@@ -149,16 +148,13 @@ const HomePage = (props: Props) => {
       setIsFetchedConversation(false);
       setMessages([]);
     }
-    console.log(foundSession);
   };
 
   useEffect(() => {
-    console.log("ABCDEfGHI+++++++>>>>>>>", sessionHistory);
     scrollToBottom();
   }, [messages]);
 
   useEffect(() => {
-    console.log("Session IF", sessionIdParams);
     fetchConversation();
   }, [sessionIdParams]);
 

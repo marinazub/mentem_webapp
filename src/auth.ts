@@ -46,13 +46,11 @@ export const authConfig = {
       }
 
       if (trigger === "update") {
-        console.log("Triggering.....................................");
         const updatedUser = await prismaDB.user.findUnique({
           where: { id: token.id as string },
           select: { iConsent: true },
         });
 
-        console.log("Updated User====>", updatedUser);
         token.iConsent = updatedUser?.iConsent;
       }
       return token;

@@ -12,5 +12,4 @@ export const fetchHistoryData = async (userId: string) => {
   );
 
   const response = await res.json();
-  console.log(response);
 };
