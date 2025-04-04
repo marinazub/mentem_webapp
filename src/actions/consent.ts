@@ -1,8 +1,6 @@
 "use server";
 
-import { auth } from "@/auth";
 import { prismaDB } from "@/lib/connect-db";
-import { getSession } from "next-auth/react";
 
 export const consentSubmit = async (userId: string) => {
   try {

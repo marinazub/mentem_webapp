@@ -17,16 +17,16 @@ import {
 } from "@/components/ui/sheet";
 
 import { useAppContext } from "@/context/useAppContext";
-type Props = {};
 
-const SidebarComponent = (props: Props) => {
+
+const SidebarComponent = () => {
   const { sessionHistory, isSidebarOpen, toggleSidebar } = useAppContext();
   const router = useRouter();
 
   useEffect(() => {
     const newSessionId = uuid4();
     router.replace(`/?sessionId=${newSessionId}`);
-  }, []);
+  }, [router]);
 
   return (
     <React.Fragment>

@@ -1,14 +1,11 @@
 "use client";
 
 import { sendMessage } from "@/actions/chat";
-import { v4 as uuid4 } from "uuid";
 import { ArrowUpIcon, LoaderCircleIcon, PlusIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useAppContext } from "@/context/useAppContext";
-
-type Props = {};
 
 interface Message {
   id: number;
@@ -22,9 +19,8 @@ interface ApiResponse {
   timestamp: string;
 }
 
-const HomePage = (props: Props) => {
-  const router = useRouter();
-  const { sessionHistory, userId } = useAppContext();
+const HomePage = () => {
+  const { sessionHistory } = useAppContext();
   const searchParams = useSearchParams();
   const sessionIdParams = searchParams.get("sessionId") as string;
   const session = useSession();
@@ -83,7 +79,7 @@ const HomePage = (props: Props) => {
     });
     setIsSubmitting(true);
     const response = await sendMessage(
-      session.data?.user?.id!,
+      session.data?.user?.id ?? "definedId",
       message,
       sessionIdParams
     );
@@ -117,7 +113,7 @@ const HomePage = (props: Props) => {
         {
           method: "POST",
           body: JSON.stringify({
-            user_id: session.data?.user.id,
+            user_id: session?.data?.user.id,
             session_id: foundSession.session_id,
           }),
         }
@@ -130,7 +126,7 @@ const HomePage = (props: Props) => {
 
         let messageIdCounter = 1;
         const updatedData: Message[] = [];
-        responseData.forEach((element, index) => {
+        responseData.forEach((element) => {
           updatedData.push({
             id: messageIdCounter++,
             sender: "user",
@@ -156,7 +152,7 @@ const HomePage = (props: Props) => {
 
   useEffect(() => {
     fetchConversation();
-  }, [sessionIdParams]);
+  }, [sessionIdParams, sessionHistory, session?.data?.user.id]);
 
   return (
     <div className="h-[calc(100vh_-_64px)] w-full flex flex-col">
@@ -176,7 +172,7 @@ const HomePage = (props: Props) => {
             How have you been feeling recently?
           </div>
         </div>
-        {messages.map((msg, index) => (
+        {messages.map((msg) => (
           <div
             key={msg.id}
             className={`flex ${

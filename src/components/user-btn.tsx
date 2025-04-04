@@ -7,12 +7,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -25,9 +21,9 @@ import {
   UserCircleIcon,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-type Props = {};
 
-const UserButton = (props: Props) => {
+
+const UserButton = () => {
   const session = useSession();
   return (
     <DropdownMenu>

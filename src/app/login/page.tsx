@@ -14,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DatePicker } from "@/components/ui/date-picker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { getSession, signIn, useSession } from "next-auth/react";
@@ -59,10 +58,9 @@ interface SignupFormData {
   password: string;
 }
 
-type FormValues = z.infer<typeof signupSchema>;
 
 export default function LoginPage() {
-  const { data: session, status, update } = useSession();
+  const { data: session,  update } = useSession();
   const router = useRouter();
   const methods = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -77,7 +75,6 @@ export default function LoginPage() {
   const [servicePreference, setServicePreference] = useState<
     "online" | "in-person"
   >("online");
-  const [dob, setDob] = useState<Date | undefined>(undefined);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -117,7 +114,7 @@ export default function LoginPage() {
     formData.append("gender", gender);
     formData.append("servicePreference", servicePreference);
 
-    let response = await signupAction(formData);
+    const response = await signupAction(formData);
 
     if (response.success) {
       toast.success(response.message);
@@ -147,7 +144,7 @@ export default function LoginPage() {
     const formData = new FormData(e.currentTarget);
     const iConsent = formData.get("iConsent");
     if (iConsent) {
-      let res = await consentSubmit(session?.user.id!);
+      const res = await consentSubmit(session?.user.id ?? "defaultId");
       if (res && res.success) {
         await update({
           ...session,
@@ -160,7 +157,7 @@ export default function LoginPage() {
     if (session?.user.iConsent) {
       router.replace("/");
     }
-  }, [session]);
+  }, [session, router]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative ">

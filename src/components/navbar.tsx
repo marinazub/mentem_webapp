@@ -2,13 +2,9 @@
 
 import React from "react";
 import { ArrowRightToLineIcon, UploadIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useAppContext } from "@/context/useAppContext";
 
-type Props = {};
-
-const Navbar = (props: Props) => {
-  const router = useRouter();
+const Navbar = () => {
   const { toggleSidebar } = useAppContext();
   return (
     <React.Fragment>
