@@ -11,6 +11,7 @@ const credentialsSchema = z.object({
 });
 
 export const authConfig = {
+  trustHost: true,
   providers: [
     Credentials({
       async authorize(credentials) {
