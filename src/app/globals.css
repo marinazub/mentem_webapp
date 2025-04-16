@@ -113,10 +113,21 @@
 }
 
 @layer base {
-  * {
+  html {
+    box-sizing: border-box;
+  }
+  *, *::before, *::after {
+    box-sizing: inherit;
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  input, select, textarea, button {
+    @apply bg-input text-foreground border border-border rounded-md;
+    appearance: none;
+    font-family: inherit;
   }
 }
